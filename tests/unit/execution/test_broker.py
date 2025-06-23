@@ -42,6 +42,10 @@ class DummyMT5:
 @pytest.fixture(autouse=True)
 def patch_mt5(monkeypatch):
     monkeypatch.setitem(sys.modules, "MetaTrader5", DummyMT5())
+    import importlib
+    from xau import execution as exec_mod
+
+    importlib.reload(exec_mod.mt5_client)
     yield
     sys.modules.pop("MetaTrader5", None)
 
