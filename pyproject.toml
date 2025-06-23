@@ -25,6 +25,7 @@ dependencies = [
     "catboost[gpu]",
     "python-binance",
     "pyarrow",
+    "MetaTrader5>=5.0.44",
 ]
 
 [project.optional-dependencies]
@@ -43,4 +44,3 @@ where = ["src"]
 [tool.mypy]
 ignore_missing_imports = true
 python_version = "3.11"
-
