@@ -15,8 +15,12 @@ Le projet suit une structure modulaire permettant l'extension future des composa
 flowchart LR
     A[Sources externes] --> B[Module xau.data]
     B --> C[Fichiers Parquet]
-    C --> D[Analyse DuckDB]
+C --> D[Analyse DuckDB]
 ```
+
+## Pré-requis
+
+Ce projet nécessite **Python ≥ 3.11**.
 
 La documentation détaillée se trouve dans `docs/data_ingestion.md`.
 
@@ -42,8 +46,8 @@ Le token Codecov se génère depuis votre tableau de bord Codecov
 ## Dépendances optionnelles
 
 Certaines fonctionnalités d'exécution s'appuient sur la bibliothèque
-`MetaTrader5`. Celle-ci ne fournit des roues que pour Windows et n'est
-compatible qu'avec Python ≤ 3.11. L'installation peut se faire via l'extra
+`MetaTrader5`. Celle-ci n'est disponible que sur **Windows** et ne propose des
+roues que pour Python 3.11. L'installation peut se faire via l'extra
 `mt5` :
 
 ```bash

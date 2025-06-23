@@ -7,7 +7,7 @@ name = "stockgenius-xau"
 version = "0.1.0"
 description = "Assistant de trading XAU/USD"
 authors = [{name = "Equipe StockGenius"}]
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.12"
 readme = "README.md"
 license = {text = "MIT"}
 classifiers = [
@@ -15,7 +15,6 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
 ]
 dependencies = [
