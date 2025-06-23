@@ -6,14 +6,30 @@ build-backend = "setuptools.build_meta"
 name = "stockgenius-xau"
 version = "0.1.0"
 description = "Assistant de trading XAU/USD"
-authors = [{name="Equipe StockGenius"}]
+authors = [{name = "Equipe StockGenius"}]
 requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "pandas",
     "numpy",
-    "pytest",
     "vectorbt",
-    "catboost[gpu]"
+    "catboost[gpu]",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
 ]
 
 [tool.setuptools.packages.find]

@@ -15,7 +15,7 @@ permissions:
   contents: read
 
 ################################################################################
-# 3 ▸ Job unique : tests + couverture + upload(s)
+# 3 ▸ Job tests
 ################################################################################
 jobs:
   test:
@@ -52,20 +52,7 @@ jobs:
           name: coverage-${{ matrix.python-version }}
           path: coverage.xml
 
-      # 3.6 – Upload vers Codecov (SEULEMENT push direct sur main **et** depuis
-      #        ton repo, donc aucun secret n’est exposé aux forks/PR)
-      - name: Publier sur Codecov
-        if: github.event_name == 'push'               &&   # un push
-            github.ref == 'refs/heads/main'           &&   # sur main
-            github.repository_owner == 'GordoxGit'         # depuis ton dépôt
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.xml
-          fail_ci_if_error: true
-          verbose: true
-
-      # 3.7 – Upload vers Coveralls (facultatif via secret USE_COVERALLS=true)
+      # 3.6 – Upload vers Coveralls (facultatif via secret USE_COVERALLS=true)
       - name: Publier sur Coveralls
         if: env.USE_COVERALLS == 'true' &&
             github.event_name == 'push' &&
@@ -76,3 +63,21 @@ jobs:
         run: |
           pip install coveralls
           coveralls --service=github
+
+  coverage:
+    needs: test
+    if: github.repository_owner == 'GordoxGit' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: coverage-${{ matrix.python-version }}
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: true
+          verbose: true

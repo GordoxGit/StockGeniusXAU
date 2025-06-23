@@ -2,3 +2,7 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 coverage.xml
+.vscode/
+venv/
+*.env
+*.log
