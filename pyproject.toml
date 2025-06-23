@@ -25,7 +25,6 @@ dependencies = [
     "catboost[gpu]",
     "python-binance",
     "pyarrow",
-    "MetaTrader5>=5.0.44",
 ]
 
 [project.optional-dependencies]
@@ -36,6 +35,9 @@ dev = [
     "pytest-vcr",
     "ruff",
     "mypy",
+]
+mt5 = [
+    "MetaTrader5>=5.0.44 ; sys_platform == 'win32' and python_version < '3.12'"
 ]
 
 [tool.setuptools.packages.find]

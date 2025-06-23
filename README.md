@@ -38,3 +38,17 @@ Pour utiliser la publication de la couverture, créez les secrets :
 Le token Codecov se génère depuis votre tableau de bord Codecov
 (`Settings → Upload Token`). Une fois obtenu, ajoutez-le dans GitHub comme
 `CODECOV_TOKEN` via **Settings → Secrets and variables → Actions**.
+
+## Dépendances optionnelles
+
+Certaines fonctionnalités d'exécution s'appuient sur la bibliothèque
+`MetaTrader5`. Celle-ci ne fournit des roues que pour Windows et n'est
+compatible qu'avec Python ≤ 3.11. L'installation peut se faire via l'extra
+`mt5` :
+
+```bash
+pip install .[mt5]
+```
+
+Sur Linux ou avec Python 3.12+, l'import est automatiquement moqué et les tests
+concernés sont ignorés.

@@ -5,7 +5,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict
 
-import MetaTrader5 as mt5
+try:  # MetaTrader5 disponible uniquement sur Windows / Py <= 3.11
+    import MetaTrader5 as mt5
+    MT5_AVAILABLE = True
+except ImportError:  # pragma: no cover - dépendance optionnelle
+    MT5_AVAILABLE = False
 from packaging import version
 
 from .exceptions import ConnexionRefusee, MarcheFerme, SlippageExcessif
@@ -16,6 +20,11 @@ class MT5Client:
     """Wrapper simplifié autour de l'API MetaTrader 5."""
 
     slippage: int = 5
+
+    def __post_init__(self) -> None:
+        """Vérifie la disponibilité de MetaTrader5."""
+        if not MT5_AVAILABLE:
+            raise RuntimeError("MetaTrader5 n'est pas installé")
 
     def connect(self, login: int, password: str, server: str) -> bool:
         """Initialise la connexion au terminal MT5."""
