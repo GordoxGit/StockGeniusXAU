@@ -23,6 +23,8 @@ dependencies = [
     "numpy",
     "vectorbt",
     "catboost[gpu]",
+    "python-binance",
+    "pyarrow",
 ]
 
 [project.optional-dependencies]
@@ -30,6 +32,9 @@ dev = [
     "pre-commit",
     "pytest",
     "pytest-cov",
+    "pytest-vcr",
+    "ruff",
+    "mypy",
 ]
 
 [tool.setuptools.packages.find]

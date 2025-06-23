@@ -11,6 +11,15 @@ StockGenius XAU vise à fournir un assistant de décision sur l'or spot (XAU/USD
 
 Le projet suit une structure modulaire permettant l'extension future des composants de données, signaux et exécution.
 
+```mermaid
+flowchart LR
+    A[Sources externes] --> B[Module xau.data]
+    B --> C[Fichiers Parquet]
+    C --> D[Analyse DuckDB]
+```
+
+La documentation détaillée se trouve dans `docs/data_ingestion.md`.
+
 ## Roadmap
 
 La feuille de route complète est détaillée dans le fichier `roadmap` à la racine du dépôt.
