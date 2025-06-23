@@ -1,50 +1,99 @@
 name: CI
 
+###############################################################################
+# 1 ▸ Déclencheurs
+###############################################################################
 on:
   push:
-    branches: [main]
-  pull_request:
+    branches: [main, dev]          # ajoute dev si tu l’utilises
+  pull_request:                    # PR internes & externes
 
+###############################################################################
+# 2 ▸ Permissions minimales
+###############################################################################
+permissions:
+  contents: read
+
+###############################################################################
+# 3 ▸ Job principal : tests + couverture
+###############################################################################
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      # 3.1 – Checkout
+      - uses: actions/checkout@v4
+
+      # 3.2 – Setup Python + cache pip
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      # 3.3 – Installer les dépendances
       - name: Installer les dépendances
         run: |
-          python -m pip install -r requirements-dev.txt
-          python -m pip install .
-      # Lance les tests en échouant si la couverture descend sous 80 %
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+          pip install -e .
+
+      # 3.4 – Exécuter les tests (échec si couverture < 80 %)
       - name: Exécuter les tests
         run: pytest --cov=src --cov-report=xml --cov-fail-under=80
-      # Téléverse la couverture en tant qu'artefact si Coveralls est activé
-      - name: Téléverser artefact couverture
-        if: ${{ secrets.USE_COVERALLS != '' }}
+
+      # 3.5 – Publier l’artefact coverage.xml (toujours utile pour debug)
+      - name: Téléverser l’artefact de couverture
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
+          name: coverage-${{ matrix.python-version }}
           path: coverage.xml
-      # Envoie la couverture à Codecov
+
+  #############################################################################
+  # 4 ▸ Job séparé pour Codecov (évite de partager le secret aux forks)
+  #############################################################################
+  coverage:
+    needs: tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'TonUser'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Télécharger l’artefact coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-3.12      # une seule version suffit pour Codecov
+          path: .
       - name: Publier sur Codecov
         uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}   # défini dans Settings → Secrets
           files: ./coverage.xml
           fail_ci_if_error: true
           verbose: true
-          token: ${{ secrets.CODECOV_TOKEN }}
-      # Installe Coveralls si demandé
-      - name: Installer Coveralls
-        if: ${{ secrets.USE_COVERALLS == 'true' }}
-        run: pip install coveralls
-      # Publie la couverture sur Coveralls
-      - name: Publier sur Coveralls
-        if: ${{ secrets.USE_COVERALLS == 'true' }}
-        env:
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-        run: coveralls --service=github
+
+  #############################################################################
+  # 5 ▸ Job facultatif Coveralls (activé si secret présent)
+  #############################################################################
+  coveralls:
+    needs: tests
+    if: ${{ env.USE_COVERALLS == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    env:
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+      USE_COVERALLS: ${{ secrets.USE_COVERALLS }}   # 'true' ou non défini
+    steps:
+      - uses: actions/checkout@v4
+      - name: Télécharger l’artefact coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-3.12
+          path: .
+      - name: Installer Coveralls & publier
+        run: |
+          pip install coveralls
+          coveralls --service=github
