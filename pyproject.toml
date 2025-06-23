@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stockgenius-xau"
+version = "0.1.0"
+description = "Assistant de trading XAU/USD"
+authors = [{name="Equipe StockGenius"}]
+requires-python = ">=3.11"
+dependencies = [
+    "pandas",
+    "numpy",
+    "pytest",
+    "vectorbt",
+    "catboost[gpu]"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

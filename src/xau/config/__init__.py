@@ -1,0 +1,1 @@
+"""Package config du projet."""
