@@ -20,12 +20,31 @@ jobs:
         run: |
           python -m pip install -r requirements-dev.txt
           python -m pip install .
+      # Lance les tests en échouant si la couverture descend sous 80 %
       - name: Exécuter les tests
-        run: pytest --cov=src --cov-report=xml
+        run: pytest --cov=src --cov-report=xml --cov-fail-under=80
+      # Téléverse la couverture en tant qu'artefact si Coveralls est activé
+      - name: Téléverser artefact couverture
+        if: ${{ secrets.USE_COVERALLS != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+      # Envoie la couverture à Codecov
       - name: Publier sur Codecov
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage.xml
           fail_ci_if_error: true
           verbose: true
-          minimum_coverage: 80
+          token: ${{ secrets.CODECOV_TOKEN }}
+      # Installe Coveralls si demandé
+      - name: Installer Coveralls
+        if: ${{ secrets.USE_COVERALLS == 'true' }}
+        run: pip install coveralls
+      # Publie la couverture sur Coveralls
+      - name: Publier sur Coveralls
+        if: ${{ secrets.USE_COVERALLS == 'true' }}
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        run: coveralls --service=github
