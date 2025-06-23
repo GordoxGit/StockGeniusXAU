@@ -1,99 +1,78 @@
 name: CI
 
-###############################################################################
+################################################################################
 # 1 ▸ Déclencheurs
-###############################################################################
+################################################################################
 on:
   push:
-    branches: [main, dev]          # ajoute dev si tu l’utilises
-  pull_request:                    # PR internes & externes
+    branches: [main]     # CI sur push dans main (gratuit dépôts publics)
+  pull_request:          # CI aussi sur toutes les PR
 
-###############################################################################
-# 2 ▸ Permissions minimales
-###############################################################################
+################################################################################
+# 2 ▸ Permissions minimales (principle of least privilege)
+################################################################################
 permissions:
   contents: read
 
-###############################################################################
-# 3 ▸ Job principal : tests + couverture
-###############################################################################
+################################################################################
+# 3 ▸ Job unique : tests + couverture + upload(s)
+################################################################################
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
 
     steps:
-      # 3.1 – Checkout
+      # 3.1 – Récupération du code
       - uses: actions/checkout@v4
 
-      # 3.2 – Setup Python + cache pip
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      # 3.2 – Installation Python + cache pip
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
 
-      # 3.3 – Installer les dépendances
+      # 3.3 – Dépendances dev + paquet en editable
       - name: Installer les dépendances
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
           pip install -e .
 
-      # 3.4 – Exécuter les tests (échec si couverture < 80 %)
+      # 3.4 – Exécution des tests, échec <80 % de couverture
       - name: Exécuter les tests
         run: pytest --cov=src --cov-report=xml --cov-fail-under=80
 
-      # 3.5 – Publier l’artefact coverage.xml (toujours utile pour debug)
-      - name: Téléverser l’artefact de couverture
+      # 3.5 – Artefact de couverture (toujours — pratique pour debug)
+      - name: Téléverser artefact couverture
         uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.python-version }}
           path: coverage.xml
 
-  #############################################################################
-  # 4 ▸ Job séparé pour Codecov (évite de partager le secret aux forks)
-  #############################################################################
-  coverage:
-    needs: tests
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'TonUser'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Télécharger l’artefact coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-3.12      # une seule version suffit pour Codecov
-          path: .
+      # 3.6 – Upload vers Codecov (SEULEMENT push direct sur main **et** depuis
+      #        ton repo, donc aucun secret n’est exposé aux forks/PR)
       - name: Publier sur Codecov
+        if: github.event_name == 'push'               &&   # un push
+            github.ref == 'refs/heads/main'           &&   # sur main
+            github.repository_owner == 'GordoxGit'         # depuis ton dépôt
         uses: codecov/codecov-action@v3
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}   # défini dans Settings → Secrets
-          files: ./coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
           fail_ci_if_error: true
           verbose: true
 
-  #############################################################################
-  # 5 ▸ Job facultatif Coveralls (activé si secret présent)
-  #############################################################################
-  coveralls:
-    needs: tests
-    if: ${{ env.USE_COVERALLS == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    env:
-      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      USE_COVERALLS: ${{ secrets.USE_COVERALLS }}   # 'true' ou non défini
-    steps:
-      - uses: actions/checkout@v4
-      - name: Télécharger l’artefact coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-3.12
-          path: .
-      - name: Installer Coveralls & publier
+      # 3.7 – Upload vers Coveralls (facultatif via secret USE_COVERALLS=true)
+      - name: Publier sur Coveralls
+        if: env.USE_COVERALLS == 'true' &&
+            github.event_name == 'push' &&
+            github.ref == 'refs/heads/main'
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          USE_COVERALLS:        ${{ secrets.USE_COVERALLS }}
         run: |
           pip install coveralls
           coveralls --service=github
