@@ -1,7 +1,7 @@
 # StockGenius XAU
 
-![CI](https://github.com/your-org/StockGeniusXAU/actions/workflows/ci.yml/badge.svg)
-![Codecov](https://codecov.io/gh/your-org/StockGeniusXAU/branch/main/graph/badge.svg)
+[![CI](https://github.com/GordoxGit/StockGeniusXAU/actions/workflows/ci.yml/badge.svg)](https://github.com/GordoxGit/StockGeniusXAU/actions/workflows/ci.yml)
+[![Codecov](https://codecov.io/gh/GordoxGit/StockGeniusXAU/branch/main/graph/badge.svg)](https://codecov.io/gh/GordoxGit/StockGeniusXAU)
 
 ## Vision
 
@@ -25,3 +25,7 @@ Pour utiliser la publication de la couverture, créez les secrets :
 
 - `CODECOV_TOKEN` pour l'upload Codecov.
 - `COVERALLS_REPO_TOKEN` (requis si `USE_COVERALLS` vaut `true`).
+
+Le token Codecov se génère depuis votre tableau de bord Codecov
+(`Settings → Upload Token`). Une fois obtenu, ajoutez-le dans GitHub comme
+`CODECOV_TOKEN` via **Settings → Secrets and variables → Actions**.
