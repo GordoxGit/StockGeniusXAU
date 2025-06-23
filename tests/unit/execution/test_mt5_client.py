@@ -5,8 +5,11 @@ import pytest
 
 from xau.execution.mt5_client import MT5_AVAILABLE
 
-if not MT5_AVAILABLE:
-    pytest.skip("MetaTrader5 non disponible", allow_module_level=True)
+if sys.platform != "win32" or sys.version_info >= (3, 12) or not MT5_AVAILABLE:
+    pytest.skip(
+        "Tests MT5 ignorés hors Windows, sous Python>=3.12 ou sans package",
+        allow_module_level=True,
+    )
 
 
 class DummyMT5:
