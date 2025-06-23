@@ -20,7 +20,7 @@ C --> D[Analyse DuckDB]
 
 ## Pré-requis
 
-Ce projet nécessite **Python ≥ 3.11**.
+Ce projet nécessite **Python ≥ 3.11** et est testé en CI sous **Python 3.11 et 3.12**.
 
 La documentation détaillée se trouve dans `docs/data_ingestion.md`.
 
