@@ -18,3 +18,10 @@ La feuille de route complète est détaillée dans le fichier `roadmap` à la ra
 ## Conformité RTS 6
 
 La conformité à la directive MiFID II et aux exigences RTS 6 est documentée dans `docs/compliance/RTS6_checklist.md`.
+
+## ⚠️ Configuration des secrets CI
+
+Pour utiliser la publication de la couverture, créez les secrets :
+
+- `CODECOV_TOKEN` pour l'upload Codecov.
+- `COVERALLS_REPO_TOKEN` (requis si `USE_COVERALLS` vaut `true`).
