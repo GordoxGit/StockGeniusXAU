@@ -1,6 +1,5 @@
 """Fonctions liées aux prix."""
 
-import re
 
 
 def clean_price(valeur: str) -> float:
