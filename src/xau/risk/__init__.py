@@ -1,1 +1,0 @@
-"""Package risk du projet."""
