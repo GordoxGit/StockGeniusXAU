@@ -126,6 +126,22 @@ void OnTick()
    // 2. Vérifier les conditions de trading (entrées/sorties, filtres, etc.).
    // ------------------------------------------------------------------
 
+   const double fast_previous     = fast_ma_values[1];
+   const double fast_previous_two = fast_ma_values[2];
+   const double slow_previous     = slow_ma_values[1];
+   const double slow_previous_two = slow_ma_values[2];
+
+   bool buy_signal  = false;
+   bool sell_signal = false;
+
+   if(fast_previous > slow_previous && fast_previous_two <= slow_previous_two)
+      buy_signal = true;
+
+   if(fast_previous < slow_previous && fast_previous_two >= slow_previous_two)
+      sell_signal = true;
+
+   // Les variables buy_signal et sell_signal peuvent être utilisées ici pour gérer les entrées en position.
+
    // ------------------------------------------------------------------
    // 3. Calculer la taille de position, définir SL/TP et exécuter l'ordre.
    // ------------------------------------------------------------------
