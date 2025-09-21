@@ -11,6 +11,9 @@
 
 CTrade trade;
 
+int fast_ma_handle = INVALID_HANDLE;
+int slow_ma_handle = INVALID_HANDLE;
+
 input group "Paramètres de la Stratégie";
 input int               Fast_MA_Period = 10;
 input int               Slow_MA_Period = 30;
@@ -27,6 +30,24 @@ input double Risk_Percent = 1.0;
 
 int OnInit()
   {
+   trade.SetExpertMagicNumber(Magic_Number);
+
+   ResetLastError();
+   fast_ma_handle = iMA(_Symbol,_Period,Fast_MA_Period,0,MA_Method,MA_Price);
+   if(fast_ma_handle == INVALID_HANDLE)
+     {
+      PrintFormat("Erreur lors de la création de la moyenne mobile rapide (période %d). Code d'erreur : %d", Fast_MA_Period, GetLastError());
+      return(INIT_FAILED);
+     }
+
+   ResetLastError();
+   slow_ma_handle = iMA(_Symbol,_Period,Slow_MA_Period,0,MA_Method,MA_Price);
+   if(slow_ma_handle == INVALID_HANDLE)
+     {
+      PrintFormat("Erreur lors de la création de la moyenne mobile lente (période %d). Code d'erreur : %d", Slow_MA_Period, GetLastError());
+      return(INIT_FAILED);
+     }
+
    return(INIT_SUCCEEDED);
   }
 
