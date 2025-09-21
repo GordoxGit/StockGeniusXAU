@@ -99,6 +99,29 @@ void OnTick()
    // 1. Préparer les données de marché et les indicateurs nécessaires.
    // ------------------------------------------------------------------
 
+   const int values_to_copy = 3;
+   double fast_ma_values[values_to_copy];
+   double slow_ma_values[values_to_copy];
+
+   ArraySetAsSeries(fast_ma_values, true);
+   ArraySetAsSeries(slow_ma_values, true);
+
+   ResetLastError();
+   const int fast_copied = CopyBuffer(fast_ma_handle, 0, 0, values_to_copy, fast_ma_values);
+   if(fast_copied != values_to_copy)
+     {
+      PrintFormat("Echec de la copie des données de la moyenne mobile rapide. Code d'erreur : %d", GetLastError());
+      return;
+     }
+
+   ResetLastError();
+   const int slow_copied = CopyBuffer(slow_ma_handle, 0, 0, values_to_copy, slow_ma_values);
+   if(slow_copied != values_to_copy)
+     {
+      PrintFormat("Echec de la copie des données de la moyenne mobile lente. Code d'erreur : %d", GetLastError());
+      return;
+     }
+
    // ------------------------------------------------------------------
    // 2. Vérifier les conditions de trading (entrées/sorties, filtres, etc.).
    // ------------------------------------------------------------------
