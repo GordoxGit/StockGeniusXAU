@@ -208,6 +208,79 @@ double CalculateLotSize(const int sl_pips)
    return(normalized_lot);
   }
 
+void ExecuteTrade(const ENUM_ORDER_TYPE order_type)
+  {
+   MqlTick current_tick;
+   if(!SymbolInfoTick(_Symbol, current_tick))
+     {
+      PrintFormat("Impossible de récupérer les prix Bid/Ask pour %s.", _Symbol);
+      return;
+     }
+
+   const double ask_price = current_tick.ask;
+   const double bid_price = current_tick.bid;
+
+   if(ask_price <= 0.0 || bid_price <= 0.0)
+     {
+      Print("Prix Bid ou Ask invalide récupéré.");
+      return;
+     }
+
+   const double lot_size = CalculateLotSize(Stop_Loss_Pips);
+   if(lot_size <= 0.0)
+     {
+      Print("Impossible d'exécuter l'ordre en raison d'une taille de lot invalide.");
+      return;
+     }
+
+   const double sl_distance = Stop_Loss_Pips * _Point;
+   const double tp_distance = Take_Profit_Pips * _Point;
+
+   if(sl_distance <= 0.0 || tp_distance <= 0.0)
+     {
+      Print("Les distances de Stop Loss ou Take Profit sont invalides.");
+      return;
+     }
+
+   double price = 0.0;
+   double stop_loss = 0.0;
+   double take_profit = 0.0;
+
+   string order_comment = "StockGeniusXAU";
+
+   if(order_type == ORDER_TYPE_BUY)
+     {
+      price       = ask_price;
+      stop_loss   = NormalizeDouble(price - sl_distance, _Digits);
+      take_profit = NormalizeDouble(price + tp_distance, _Digits);
+
+      trade.Buy(lot_size, _Symbol, price, stop_loss, take_profit, order_comment);
+     }
+   else if(order_type == ORDER_TYPE_SELL)
+     {
+      price       = bid_price;
+      stop_loss   = NormalizeDouble(price + sl_distance, _Digits);
+      take_profit = NormalizeDouble(price - tp_distance, _Digits);
+
+      trade.Sell(lot_size, _Symbol, price, stop_loss, take_profit, order_comment);
+     }
+   else
+     {
+      Print("Type d'ordre non supporté pour l'exécution.");
+      return;
+     }
+
+   const uint result_code = trade.ResultRetcode();
+   if(result_code == TRADE_RETCODE_DONE || result_code == TRADE_RETCODE_PLACED)
+     {
+      PrintFormat("Ordre %s envoyé avec succès. Ticket #%I64u, Lots: %.2f, SL: %.5f, TP: %.5f", order_type == ORDER_TYPE_BUY ? "Achat" : "Vente", trade.ResultOrder(), lot_size, stop_loss, take_profit);
+     }
+   else
+     {
+      PrintFormat("Echec de l'envoi de l'ordre %s. Code: %u - %s", order_type == ORDER_TYPE_BUY ? "Achat" : "Vente", result_code, trade.ResultRetcodeDescription());
+     }
+  }
+
 void OnTick()
   {
    if(HasManagedPositionOpen(_Symbol))
@@ -263,4 +336,8 @@ void OnTick()
    // ------------------------------------------------------------------
    // 3. Calculer la taille de position, définir SL/TP et exécuter l'ordre.
    // ------------------------------------------------------------------
+   if(buy_signal)
+      ExecuteTrade(ORDER_TYPE_BUY);
+   else if(sell_signal)
+      ExecuteTrade(ORDER_TYPE_SELL);
   }
