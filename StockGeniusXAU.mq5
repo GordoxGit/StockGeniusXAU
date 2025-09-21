@@ -53,6 +53,17 @@ int OnInit()
 
 void OnDeinit(const int reason)
   {
+   if(fast_ma_handle != INVALID_HANDLE)
+     {
+      IndicatorRelease(fast_ma_handle);
+      fast_ma_handle = INVALID_HANDLE;
+     }
+
+   if(slow_ma_handle != INVALID_HANDLE)
+     {
+      IndicatorRelease(slow_ma_handle);
+      slow_ma_handle = INVALID_HANDLE;
+     }
   }
 
 void OnTick()
