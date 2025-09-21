@@ -90,6 +90,124 @@ bool HasManagedPositionOpen(const string symbol)
    return(false);
   }
 
+double CalculateLotSize(const int sl_pips)
+  {
+   if(sl_pips <= 0)
+     {
+      Print("Le Stop Loss doit être supérieur à zéro pour calculer la taille de lot.");
+      return(0.0);
+     }
+
+   if(Risk_Percent <= 0.0)
+     {
+      Print("Le pourcentage de risque doit être supérieur à zéro.");
+      return(0.0);
+     }
+
+   const double equity       = AccountInfoDouble(ACCOUNT_EQUITY);
+   const double risk_amount  = equity * (Risk_Percent / 100.0);
+
+   if(risk_amount <= 0.0)
+     {
+      Print("Impossible de calculer un montant de risque valide avec les paramètres actuels.");
+      return(0.0);
+     }
+
+   double tick_value = 0.0;
+   double tick_size  = 0.0;
+   double volume_step = 0.0;
+   double volume_min  = 0.0;
+   double volume_max  = 0.0;
+   double point_value = 0.0;
+
+   if(!SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_VALUE, tick_value) ||
+      !SymbolInfoDouble(_Symbol, SYMBOL_TRADE_TICK_SIZE, tick_size)  ||
+      !SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_STEP, volume_step)    ||
+      !SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MIN, volume_min)      ||
+      !SymbolInfoDouble(_Symbol, SYMBOL_VOLUME_MAX, volume_max)      ||
+      !SymbolInfoDouble(_Symbol, SYMBOL_POINT, point_value))
+     {
+      Print("Impossible de récupérer les informations du symbole pour le calcul de la taille de lot.");
+      return(0.0);
+     }
+
+   if(tick_value <= 0.0 || tick_size <= 0.0 || volume_step <= 0.0 || volume_max <= 0.0)
+     {
+      Print("Les propriétés du symbole retournent des valeurs invalides pour le calcul de la taille de lot.");
+      return(0.0);
+     }
+
+   long digits_value = 0;
+   if(!SymbolInfoInteger(_Symbol, SYMBOL_DIGITS, digits_value))
+     {
+      Print("Impossible de récupérer le nombre de décimales du symbole.");
+      return(0.0);
+     }
+
+   const int digits = (int)digits_value;
+   double pip_size   = point_value;
+
+   if(digits == 3 || digits == 5)
+      pip_size = point_value * 10.0;
+
+   const double price_distance = MathAbs(sl_pips) * pip_size;
+   if(price_distance <= 0.0)
+      return(0.0);
+
+   const double loss_per_lot = (price_distance / tick_size) * tick_value;
+   if(loss_per_lot <= 0.0)
+      return(0.0);
+
+   const double raw_lot = risk_amount / loss_per_lot;
+   if(raw_lot <= 0.0)
+      return(0.0);
+
+   const double step_ratio  = raw_lot / volume_step;
+   const double steps_count = MathFloor(step_ratio + 1e-8);
+   double normalized_lot    = steps_count * volume_step;
+
+   string step_text = DoubleToString(volume_step, 8);
+   int    dot_index = StringFind(step_text, ".");
+   int    precision = 0;
+   if(dot_index >= 0)
+     {
+      int last_index = StringLen(step_text) - 1;
+      while(last_index > dot_index && StringGetCharacter(step_text, last_index) == '0')
+         last_index--;
+
+      precision = last_index - dot_index;
+      if(precision < 0)
+         precision = 0;
+     }
+
+   normalized_lot = NormalizeDouble(normalized_lot, precision);
+
+   if(normalized_lot < volume_min)
+     {
+      PrintFormat("La taille de lot calculée (%.8f) est inférieure au minimum autorisé (%.8f) pour %s.",
+                  normalized_lot,
+                  volume_min,
+                  _Symbol);
+      return(0.0);
+     }
+
+   double max_lot_allowed = MathFloor(volume_max / volume_step) * volume_step;
+   max_lot_allowed        = NormalizeDouble(max_lot_allowed, precision);
+
+   if(max_lot_allowed <= 0.0)
+      return(0.0);
+
+   if(normalized_lot > max_lot_allowed)
+      normalized_lot = max_lot_allowed;
+
+   if(normalized_lot > volume_max)
+      normalized_lot = volume_max;
+
+   normalized_lot = NormalizeDouble(normalized_lot, precision);
+
+   return(normalized_lot);
+  }
+
 void OnTick()
   {
    if(HasManagedPositionOpen(_Symbol))
