@@ -66,6 +66,44 @@ void OnDeinit(const int reason)
      }
   }
 
+bool HasManagedPositionOpen(const string symbol)
+  {
+   const int positions_total = PositionsTotal();
+   for(int index = 0; index < positions_total; ++index)
+     {
+      ulong ticket = PositionGetTicket(index);
+      if(ticket == 0)
+         continue;
+
+      if(!PositionSelectByTicket(ticket))
+         continue;
+
+      if(PositionGetInteger(POSITION_MAGIC) != Magic_Number)
+         continue;
+
+      if(PositionGetString(POSITION_SYMBOL) != symbol)
+         continue;
+
+      return(true);
+     }
+
+   return(false);
+  }
+
 void OnTick()
   {
+   if(HasManagedPositionOpen(_Symbol))
+      return;
+
+   // ------------------------------------------------------------------
+   // 1. Préparer les données de marché et les indicateurs nécessaires.
+   // ------------------------------------------------------------------
+
+   // ------------------------------------------------------------------
+   // 2. Vérifier les conditions de trading (entrées/sorties, filtres, etc.).
+   // ------------------------------------------------------------------
+
+   // ------------------------------------------------------------------
+   // 3. Calculer la taille de position, définir SL/TP et exécuter l'ordre.
+   // ------------------------------------------------------------------
   }
